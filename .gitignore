@@ -1,0 +1,8 @@
+.env
+.env.example
+env.sh
+utils/
+*.py
+*.md
+*.sh
+*.sql.skip

@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env
+.env.example
+env.sh
+utils/
+*.py
+*.md
+*.sh
+Dockerfile
+docker-compose.yml
+.dockerignore
