@@ -54,7 +54,6 @@ services:
       - DBUrl=${POSTGRES_DB_URL}
       - BUNDEBUG=${BUNDEBUG:-0}
       - APIKey=${API_KEY}
-    env_file: .env
 
 volumes:
   pgdata:
