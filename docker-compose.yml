@@ -1,46 +1,47 @@
 services:
-  db:
-    image: postgres:18-alpine
-    restart: unless-stopped
-    env_file: .env
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/18/docker
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+  # db:
+  #   image: postgres:18-alpine
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/18/docker
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
 
-  migrate:
-    image: migrate/migrate:v4.18.1
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ./data/migrations:/migrations
-    env_file: .env
-    command:
-      [
-        "-path=/migrations",
-        "-database",
-        "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable",
-        "up",
-      ]
+  # migrate:
+  #   image: migrate/migrate:v4.18.1
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./data/migrations:/migrations
+  #   env_file: .env
+  #   command:
+  #     [
+  #       "-path=/migrations",
+  #       "-database",
+  #       "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable",
+  #       "up",
+  #     ]
 
   app:
     build: .
     restart: unless-stopped
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
+    # depends_on:
+    #   migrate:
+    #     condition: service_completed_successfully
     ports:
       - "8080:8080"
     environment:
       - DBUrl=${POSTGRES_DB_URL}
       - BUNDEBUG=${BUNDEBUG:-0}
       - APIKey=${API_KEY}
+      - DeepseekAPIKey=${DEEPSEEK_API_KEY}
     env_file: .env
 
 volumes:

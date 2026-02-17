@@ -20,3 +20,7 @@ type GetWordsByHskSourceIDResponse struct {
 	List  []GetWordsByHskSourceIDItem `json:"list"`
 	Total int                         `json:"total"`
 }
+
+type GenerateDialogueFromAIRequest struct {
+	Complexity string `json:"complexity"`
+}

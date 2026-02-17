@@ -1,21 +1,26 @@
 package handler
 
 import (
+	"core_hsk_project/ai"
 	"core_hsk_project/errors"
 	"core_hsk_project/services"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	service services.ServiceInterface
+	service   services.ServiceInterface
+	aiService ai.ServiceInterface
 }
 
-func NewHandler(service services.ServiceInterface) *Handler {
+func NewHandler(service services.ServiceInterface, aiSvc ai.ServiceInterface) *Handler {
 	return &Handler{
-		service: service,
+		service:   service,
+		aiService: aiSvc,
 	}
 }
 
@@ -57,5 +62,67 @@ func (h *Handler) GetWordsByHskSourceID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    response,
+	})
+}
+
+func (h *Handler) GenerateDialogueFromAI(c *gin.Context) {
+	hskSourceID, err := strconv.Atoi(c.Param("hsk_source_id"))
+	if err != nil {
+		HandleError(c, errors.CustomError{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid hsk_source_id",
+		})
+		return
+	}
+
+	complexity, err := strconv.Atoi(c.Query("complexity"))
+	if err != nil {
+		HandleError(c, errors.CustomError{
+			Code:    http.StatusBadRequest,
+			Message: "complexity is not valid",
+		})
+		return
+	}
+
+	// Validate text complexity range
+	if complexity < 1 || complexity > 3 {
+		HandleError(c, errors.CustomError{
+			Code:    http.StatusBadRequest,
+			Message: "complexity must be between 1 and 3",
+		})
+		return
+	}
+
+	// Validate complexity for HSK level
+	if hskSourceID == 1 && complexity == 3 {
+		HandleError(c, errors.CustomError{
+			Code:    http.StatusBadRequest,
+			Message: "HSK level 1 only supports complexity 1 and 2",
+		})
+		return
+	}
+
+	words, err := h.service.GetWordsWithPreviousLevel(hskSourceID)
+	var stringifiedWords strings.Builder
+	for _, word := range words {
+		stringifiedWords.WriteString(word.Hanzi + "-")
+	}
+
+	result, err := h.aiService.GenerateDialogueFromAI(ai.GenerateDialogueFromAIRequest{
+		HSKLevel:         hskSourceID,
+		StringifiedWords: stringifiedWords.String(),
+		TextComplexity:   complexity,
+	})
+	if err != nil {
+		HandleError(c, errors.CustomError{
+			Code:    http.StatusInternalServerError,
+			Message: fmt.Errorf("failed to generate dialogue from AI: %v", err).Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    result,
 	})
 }

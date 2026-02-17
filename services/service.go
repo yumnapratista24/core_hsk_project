@@ -16,7 +16,7 @@ func NewService(model model.ModelInterface) ServiceInterface {
 }
 
 func (s *Service) GetWordsByHskSourceID(hskSourceID int) (dto.GetWordsByHskSourceIDResponse, error) {
-	results, count, err := s.model.GetWordsByHskSourceID(hskSourceID)
+	results, count, err := s.getWordsByHSKLevel(hskSourceID)
 	if err != nil {
 		return dto.GetWordsByHskSourceIDResponse{}, err
 	}
@@ -24,6 +24,15 @@ func (s *Service) GetWordsByHskSourceID(hskSourceID int) (dto.GetWordsByHskSourc
 	response := buildGetWordsByHskSourceIDResponse(results, count)
 
 	return response, nil
+}
+
+func (s *Service) getWordsByHSKLevel(hskSourceID int) ([]model.Word, int, error) {
+	words, err := s.model.GetWordsByHskSourceID(hskSourceID)
+	if err != nil {
+		return nil, 0, err
+	}
+	count := len(words)
+	return words, count, nil
 }
 
 func buildGetWordsByHskSourceIDResponse(data []model.Word, count int) dto.GetWordsByHskSourceIDResponse {
@@ -47,4 +56,12 @@ func buildGetWordsByHskSourceIDResponse(data []model.Word, count int) dto.GetWor
 		List:  list,
 		Total: count,
 	}
+}
+
+func (s *Service) GetWordsWithPreviousLevel(hskSourceID int) ([]model.Word, error) {
+	words, err := s.model.GetWords(hskSourceID, true)
+	if err != nil {
+		return nil, err
+	}
+	return words, nil
 }
