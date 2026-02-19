@@ -24,3 +24,7 @@ type GetWordsByHskSourceIDResponse struct {
 type GenerateDialogueFromAIRequest struct {
 	Complexity string `json:"complexity"`
 }
+
+type GenerateGradedTextRequest struct {
+	Complexity int `json:"complexity"`
+}

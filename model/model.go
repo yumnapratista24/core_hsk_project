@@ -23,6 +23,7 @@ type Word struct {
 	bun.BaseModel   `bun:"table:words"`
 	WordTranslation []WordTranslation `bun:"rel:has-many,join:id=word_id"`
 	Example         *Example          `bun:"rel:has-one,join:id=word_id"`
+	HSKSource       *HskSource        `bun:"rel:belongs-to,join:hsk_source_id=id"`
 
 	ID          int        `bun:"id,pk,autoincrement" json:"id"`
 	Hanzi       string     `bun:"hanzi,notnull" json:"hanzi"`

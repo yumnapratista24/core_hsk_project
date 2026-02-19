@@ -42,6 +42,7 @@ func setupRoutes(router *gin.Engine, handler *handler.Handler) {
 	api.Use(middleware.Authenticate())
 	api.GET("/hsk-sources/:hsk_source_id/words", handler.GetWordsByHskSourceID)
 	api.GET("/hsk-sources/:hsk_source_id/generate-dialogue", handler.GenerateDialogueFromAI)
+	api.GET("/hsk-sources/:hsk_source_id/generate-graded-text", handler.GenerateGradedTextFromAI)
 
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{

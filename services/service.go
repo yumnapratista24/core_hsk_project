@@ -58,10 +58,10 @@ func buildGetWordsByHskSourceIDResponse(data []model.Word, count int) dto.GetWor
 	}
 }
 
-func (s *Service) GetWordsWithPreviousLevel(hskSourceID int) ([]model.Word, error) {
-	words, err := s.model.GetWords(hskSourceID, true)
+func (s *Service) GetWordsWithPreviousLevel(hskSourceID int) ([]model.Word, []model.Word, error) {
+	words, wordsPreviousLevel, err := s.model.GetWords(hskSourceID, true)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return words, nil
+	return words, wordsPreviousLevel, nil
 }

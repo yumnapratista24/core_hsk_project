@@ -29,26 +29,32 @@ func (m *HskModel) GetWordsByHskSourceID(hskSourceID int) ([]Word, error) {
 	return words, nil
 }
 
-func (m *HskModel) GetWords(hskSourceID int, withPreviousLevel bool) ([]Word, error) {
+func (m *HskModel) GetWords(hskSourceID int, withPreviousLevel bool) ([]Word, []Word, error) {
 	var words []Word
 	query := m.DB.NewSelect().
 		Model(&words).
 		Join("JOIN hsk_sources ON word.hsk_source_id = hsk_sources.id")
-
-	if withPreviousLevel {
-		// Get words from level 1 to hskSourceID
-		query = query.Where("hsk_sources.id <= ?", hskSourceID)
-	} else {
-		// Get words from specific level only
-		query = query.Where("hsk_sources.id = ?", hskSourceID)
-	}
-	// Limit to 100 words
+	query = query.Where("hsk_sources.id = ?", hskSourceID)
 	query = query.Limit(100)
 	query = query.OrderExpr("RANDOM()")
-
 	err := query.Scan(context.Background())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return words, nil
+
+	var wordsPreviousLevel []Word
+	if withPreviousLevel && hskSourceID > 1 {
+		query := m.DB.NewSelect().
+			Model(&wordsPreviousLevel).
+			Relation("HSKSource")
+		query = query.Where("hsk_source.id < ?", hskSourceID)
+		query = query.Limit(100)
+		query = query.OrderExpr("RANDOM()")
+		err := query.Scan(context.Background())
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	return words, wordsPreviousLevel, nil
 }

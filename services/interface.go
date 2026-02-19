@@ -7,5 +7,5 @@ import (
 
 type ServiceInterface interface {
 	GetWordsByHskSourceID(hskSourceID int) (dto.GetWordsByHskSourceIDResponse, error)
-	GetWordsWithPreviousLevel(hskSourceID int) ([]model.Word, error)
+	GetWordsWithPreviousLevel(hskSourceID int) ([]model.Word, []model.Word, error)
 }
